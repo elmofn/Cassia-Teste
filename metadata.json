@@ -1,0 +1,7 @@
+{
+  "name": "Cassia - TravelCash",
+  "description": "Cassia, sua especialista em viagens e concierge da TravelCash.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     build: {
-      outDir: 'build', // Configura a saída para a pasta 'build' que o Vercel está procurando
+      outDir: 'dist', // Padrão do Vite (e do Vercel preset "Vite")
     },
     define: {
       // Garante que process.env.API_KEY funcione no código do cliente

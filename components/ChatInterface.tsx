@@ -8,7 +8,7 @@ const ChatInterface: React.FC = () => {
     {
       id: 'welcome',
       role: 'model',
-      text: 'Oi! Sou a Cassia da TravelCash. 👋\n\nSe precisar de alguma dica de viagem ou ajuda com a conta, é só chamar!',
+      text: 'Oi! Sou a Cassia, da TravelCash.',
       timestamp: new Date()
     }
   ]);

@@ -1,12 +1,19 @@
 import { GoogleGenAI, Content, Part, FunctionDeclaration, Type } from "@google/genai";
 
 // 1. Definição da Tool
+// Adicionamos um parâmetro dummy para garantir que o Schema seja válido e robusto
 const getBalanceTool: FunctionDeclaration = {
   name: 'getBalance',
-  description: 'Retorna o saldo atual. Use APENAS se perguntarem de dinheiro/orçamento.',
+  description: 'Retorna o saldo atual da conta TravelCash do usuário. Use quando perguntarem sobre valores, dinheiro disponível, ou se podem comprar algo.',
   parameters: {
     type: Type.OBJECT,
-    properties: {}, 
+    properties: {
+      check: {
+        type: Type.STRING,
+        description: "Apenas envie 'status' para confirmar.",
+      }
+    },
+    required: ['check'],
   },
 };
 
@@ -66,7 +73,7 @@ Cassia: "Não sei cozinhar, só sei viajar. Se quiser ir pra Itália comer uma m
    * Decide qual ferramenta ativar com base no texto do usuário.
    */
   private selectTools(userMessage: string): any[] {
-    const financialKeywords = ['saldo', 'dinheiro', 'conta', 'gastar', 'orçamento', 'limite', 'tenho', 'pobre', 'rico'];
+    const financialKeywords = ['saldo', 'dinheiro', 'conta', 'gastar', 'orçamento', 'limite', 'tenho', 'pobre', 'rico', 'comprar'];
     const lowerMsg = userMessage.toLowerCase();
     
     const isFinancial = financialKeywords.some(keyword => lowerMsg.includes(keyword));
@@ -93,9 +100,9 @@ Cassia: "Não sei cozinhar, só sei viajar. Se quiser ir pra Itália comer uma m
       // 2. Selecionar ferramentas
       let currentTools = this.selectTools(message);
 
-      // 3. Primeira chamada
+      // 3. Primeira chamada - Usando gemini-2.5-flash para maior estabilidade com Tools
       let response = await this.ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-2.5-flash',
         contents: [...this.history, userContent],
         config: {
           tools: currentTools,
@@ -112,7 +119,6 @@ Cassia: "Não sei cozinhar, só sei viajar. Se quiser ir pra Itália comer uma m
         for (const call of response.functionCalls) {
           const fn = functions[call.name];
           if (fn) {
-            // console.log(`Executing tool: ${call.name}`); // Comentado para limpar logs
             const result = fn();
             functionResponseParts.push({
               functionResponse: {
@@ -133,7 +139,7 @@ Cassia: "Não sei cozinhar, só sei viajar. Se quiser ir pra Itália comer uma m
           ];
 
           response = await this.ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-2.5-flash',
             contents: contentWithFunctionResults,
             config: { 
               systemInstruction: this.systemInstruction,
@@ -148,7 +154,7 @@ Cassia: "Não sei cozinhar, só sei viajar. Se quiser ir pra Itália comer uma m
       }
 
       // 5. Processar resposta final
-      const text = response.text || "Hum, falhou aqui. Tenta de novo?";
+      const text = response.text || "Não consegui ver isso agora. Tenta de novo?";
       const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
 
       // 6. Atualizar histórico

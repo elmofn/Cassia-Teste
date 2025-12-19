@@ -8,7 +8,7 @@ const ChatInterface: React.FC = () => {
     {
       id: 'welcome',
       role: 'model',
-      text: 'Oi! Sou a Cassia, da TravelCash.',
+      text: 'Oie! Sou a Cassia. 😊',
       timestamp: new Date()
     }
   ]);
@@ -73,10 +73,14 @@ const ChatInterface: React.FC = () => {
       // Pass userText AND the captured location context
       const { text: responseText, groundingMetadata } = await geminiServiceRef.current.sendMessage(userText, userLocation);
 
-      // Remove artificial delay to make search results feel faster, 
-      // or keep a small one for UI smoothing. Search takes time anyway.
-      // Keeping a small constant delay for animation smoothness.
-      await new Promise(resolve => setTimeout(resolve, 600));
+      // HUMAN TYPING DELAY CALCULATION
+      // 140ms per character as requested.
+      // We cap it at 5000ms (5 seconds) to avoid frustrating the user with extremely long waits for long texts.
+      const msPerChar = 140;
+      const calculatedDelay = responseText.length * msPerChar;
+      const finalDelay = Math.min(calculatedDelay, 5000); // Max wait: 5s
+
+      await new Promise(resolve => setTimeout(resolve, finalDelay));
 
       const modelMsg: Message = {
         id: (Date.now() + 1).toString(),
